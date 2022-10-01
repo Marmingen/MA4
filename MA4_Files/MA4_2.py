@@ -1,5 +1,7 @@
 #!/usr/bin/env python3.9
 
+import concurrent.futures as future
+
 import multiprocessing as mp
 
 from numba import njit
@@ -25,11 +27,15 @@ def fib_threading_py(lst, func, n):
 	tick = pc()
 	func(n)
 	lst.append((n, pc()-tick))
+	print(lst)
+
+	return lst
 
 def fib_threading_cpp(lst, p, n):
 	tick = pc()
 	p.fib()
 	lst.append((n, pc()-tick))
+	return lst
 
 def plotting(fp, fn, fc):
 	for f in [fp ,fn, fc]:
@@ -49,25 +55,25 @@ def main():
 	fn = []
 	fc = []
 
-	for n in range(30, 46, 5):
+	for n in range(30, 39, 5):
 		print(f"n-value: {n}")
 		tick = pc()
 
-		p1 = mp.Process(target = fib_threading_py, args = (fp, fib_py, n))
+		with future.ProcessPoolExecutor() as ex:
+			p1 = ex.submit(fib_threading_py, fp, fib_py, n)
 
-		p2 = mp.Process(target = fib_threading_py, args = (fn, fib_numba, n))
+			p2 = ex.submit(fib_threading_py, fn, fib_numba, n)
 
-		f = Person(n)
+			f = Person(n)
 
-		p3 = mp.Process(target = fib_threading_cpp, args = (fc, f, n))
+			p3 = ex.submit(fib_threading_cpp, fc, f, n)
 
-		for p in [p1, p2, p3]:
-			p.start()
-
-		for p in [p1, p2, p3]:
-			p.join()
+			fp = p1.result()
+			fn = p2.result()
+			fc = p3.result()
 
 		print(f"total time for {n}: {pc()-tick}")
+		print(fp)
 
 	plotting(fp, fn, fc)
 
