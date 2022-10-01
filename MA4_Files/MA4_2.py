@@ -36,14 +36,16 @@ def fib_threading_cpp(lst, p, n):
 	return lst
 
 def plotting(fp, fn, fc, n_lst):
-	for f in [fp ,fn, fc]:
-		plt.plot(n_lst, f)
+
+
+	for f, l in zip([fp ,fn, fc],["python", "numba", "c++"]):
+		plt.plot(n_lst, f, label=l)
 
 	plt.xlabel("n-values")
 	plt.ylabel("time")
 	plt.title("")
 	plt.legend()
-
+	plt.show()
 	plt.savefig("plot.png")	
 
 
